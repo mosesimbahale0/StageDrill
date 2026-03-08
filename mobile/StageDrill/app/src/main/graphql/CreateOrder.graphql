@@ -1,0 +1,20 @@
+# This mutation takes an OrderInput object and returns the created order's details.
+mutation CreateOrder($input: OrderInput!) {
+    createOrder(input: $input) {
+        _id
+        _customer_id
+        product_id
+        quantity
+        price
+        status
+        shipping_address
+        shipping_address_description
+        payment_method
+        payment_status
+        delivery_date
+        summary
+        is_approved
+        createdAt
+        product_name
+    }
+}

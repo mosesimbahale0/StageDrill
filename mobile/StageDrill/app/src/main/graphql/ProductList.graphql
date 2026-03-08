@@ -1,0 +1,18 @@
+query ProductList($cursor: String, $pageSize: Int) {
+    products(after: $cursor, pageSize: $pageSize) {
+        cursor
+        hasMore
+        products {
+            _id
+            product_name
+            product_description
+            product_cover
+            start_bid
+            current_bid
+            is_sold
+            category
+            auction_end
+            seller
+        }
+    }
+}

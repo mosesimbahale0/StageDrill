@@ -1,0 +1,12 @@
+# This mutation updates an existing order's status to "Canceled".
+# It takes a single, non-nullable variable: the ID of the order to cancel.
+mutation CancelOrder($orderId: ID!) {
+    # The '_id' is provided by the '$orderId' variable.
+    # The 'input' object specifies which fields to change. In this case, only the status.
+    updateOrder(_id: $orderId, input: { status: "Canceled" }) {
+        # We ask for the '_id' and 'status' back from the server
+        # to confirm that the update was successful.
+        _id
+        status
+    }
+}

@@ -1,0 +1,23 @@
+# Ignore dependencies, as they are installed in the container
+node_modules
+
+# Ignore the compiled output, as it is built in the container
+dist
+build
+
+# Ignore git history
+.git
+.gitignore
+
+# Ignore sensitive files
+.env
+.env.local
+.env.*
+
+# Ignore log files
+*.log
+npm-debug.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

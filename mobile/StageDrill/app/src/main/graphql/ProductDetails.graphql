@@ -1,0 +1,46 @@
+query ProductDetails($id: ID!) {
+    product(id: $id) {
+        _id
+        product_name
+        product_description
+        product_cover
+        product_images
+        product_video
+        display_location
+        start_bid
+        current_bid
+        min_bid_increment
+        must_win_bid
+        auction_start
+        auction_end
+        is_sold
+        tags
+        category
+        sold_price
+        seller
+        buyer
+        is_active
+        is_verified
+        is_moderated
+        views
+        likes
+        bidders_count
+        createdAt
+        updatedAt
+        bidders {
+            _id
+            user_name
+            profile_picture
+        }
+        bidHistory {
+            _id
+            bid_amount
+            bid_time
+            customer {
+                _id
+                user_name
+                profile_picture
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: background;
+}
+
+/* Slow SVG spin animation */
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 1s linear;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.like-icon path {
+  animation: like-animation 1s ease-in-out infinite alternate;
+}
+
+@keyframes like-animation {
+  from {
+    stroke-dasharray: 0 100%;
+  }
+  to {
+    stroke-dasharray: 80% 100%;
+  }
+}

@@ -1,0 +1,35 @@
+import { Schema, model } from "mongoose";
+
+const productSchema = new Schema(
+  {
+    product_name: { type: String, required: true },
+    product_description: { type: String },
+    product_cover: { type: String },
+    product_images: [String],
+    product_video: { type: String },
+    display_location: { type: String },
+    start_bid: { type: Number, required: true },
+    current_bid: { type: Number, default: 0 },
+    min_bid_increment: { type: Number },
+    must_win_bid: { type: Number },
+    auction_start: { type: Date, required: true },
+    auction_end: { type: Date, required: true },
+    is_sold: { type: Boolean, default: false },
+    tags: [String],
+    category: { type: String },
+    sold_price: { type: Number },
+    seller: { type: String, required: true },
+    buyer: { type: String },
+    is_active: { type: Boolean, default: true },
+    is_verified: { type: Boolean, default: false },
+    is_moderated: { type: Boolean, default: false },
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    bidders_count: { type: Number, default: 0 },
+    bidders: [{ type: Schema.Types.ObjectId, ref: "Customer" }],
+    bid_history: [{ type: Schema.Types.ObjectId, ref: "Bid" }]
+  },
+  { timestamps: true, collection: "products" }
+);
+
+export default model("Product", productSchema);

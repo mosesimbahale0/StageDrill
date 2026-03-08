@@ -1,0 +1,16 @@
+.idea
+.gradle
+.DS_Store
+build
+captures
+.externalNativeBuild
+.cxx
+local.properties
+*/build
+*/.cxx
+*/.externalNativeBuild
+/app/release/
+app/google-services.json
+app/keystore.jks    
+
+
