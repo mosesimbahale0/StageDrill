@@ -12,10 +12,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,10 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -54,8 +55,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.stagedrill.stagedrill.auth.AccountScreen
 import com.stagedrill.stagedrill.auth.PhoneAuthScreen
-import com.stagedrill.stagedrill.bargain.BargainDetailsScreen
-import com.stagedrill.stagedrill.bargain.BargainListScreen
 import com.stagedrill.stagedrill.common.TopBar
 import com.stagedrill.stagedrill.common.BottomNavItem
 import com.stagedrill.stagedrill.common.NavigationArguments
@@ -67,10 +66,8 @@ import com.stagedrill.stagedrill.favourites.FavouriteListScreen
 import com.stagedrill.stagedrill.funspot.FunspotCallScreen
 import com.stagedrill.stagedrill.funspot.FunspotListScreen
 import com.stagedrill.stagedrill.landing.LandingScreen
-import com.stagedrill.stagedrill.listing.ListingDetailsScreen
-import com.stagedrill.stagedrill.listing.ListingListScreen
-import com.stagedrill.stagedrill.store.ProductDetailsScreen
-import com.stagedrill.stagedrill.store.ProductListScreen
+import com.stagedrill.stagedrill.stats.StatsScreen
+import com.stagedrill.stagedrill.template.TemplateListScreen
 import com.stagedrill.stagedrill.ui.theme.Theme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -96,28 +93,35 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Theme {
-                var currentUser by remember { mutableStateOf(auth.currentUser) }
-                val authStateListener = remember {
-                    FirebaseAuth.AuthStateListener { firebaseAuth ->
-                        currentUser = firebaseAuth.currentUser
-                    }
-                }
-                DisposableEffect(auth) {
-                    auth.addAuthStateListener(authStateListener)
-                    onDispose { auth.removeAuthStateListener(authStateListener) }
-                }
-
-                val networkStatusTracker = remember { NetworkStatusTracker(applicationContext) }
-                val networkStatus by networkStatusTracker.networkStatus.collectAsState(initial = NetworkStatus.Unavailable)
-
-                CompositionLocalProvider(LocalNetworkStatus provides networkStatus) {
-                    if (currentUser == null) {
-                        AuthNavigation(auth = auth)
-                    } else {
-                        MainAppContent(auth = auth)
-                    }
-                }
+                MainApp(auth)
             }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun MainApp(auth: FirebaseAuth) {
+    var currentUser by remember { mutableStateOf(auth.currentUser) }
+    val authStateListener = remember {
+        FirebaseAuth.AuthStateListener { firebaseAuth ->
+            currentUser = firebaseAuth.currentUser
+        }
+    }
+    DisposableEffect(auth) {
+        auth.addAuthStateListener(authStateListener)
+        onDispose { auth.removeAuthStateListener(authStateListener) }
+    }
+
+    val context = LocalContext.current
+    val networkStatusTracker = remember { NetworkStatusTracker(context.applicationContext) }
+    val networkStatus by networkStatusTracker.networkStatus.collectAsState(initial = NetworkStatus.Unavailable)
+
+    CompositionLocalProvider(LocalNetworkStatus provides networkStatus) {
+        if (currentUser == null) {
+            AuthNavigation(auth = auth)
+        } else {
+            MainAppContent(auth = auth)
         }
     }
 }
@@ -133,7 +137,7 @@ private fun AuthNavigation(auth: FirebaseAuth) {
         }
         composable(NavigationDestinations.PHONE_AUTH) {
             PhoneAuthScreen(auth = auth, onSignInSuccess = {
-                // The AuthStateListener in MainActivity will handle recomposition
+                // The AuthStateListener in MainApp will handle recomposition
             })
         }
     }
@@ -143,17 +147,14 @@ private fun AuthNavigation(auth: FirebaseAuth) {
 @Composable
 private fun MainAppContent(auth: FirebaseAuth) {
     val navController = rememberNavController()
-    val mainViewModel: MainViewModel = viewModel()
-    val hasNewOrders by mainViewModel.hasNewOrders.collectAsState()
-
-    val bottomNavItems = listOf(
-        BottomNavItem.Store,
-        BottomNavItem.Funspots,
-        BottomNavItem.Listings,
-        BottomNavItem.Bargains
-    )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val bottomNavItems = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Templates,
+        BottomNavItem.Stats
+    )
 
     // Maintain TopBar and BottomBar across the main logged-in area
     val isAuthRoute = currentRoute in listOf(NavigationDestinations.LANDING, NavigationDestinations.PHONE_AUTH)
@@ -202,17 +203,11 @@ private fun MainAppContent(auth: FirebaseAuth) {
                         NavigationBarItem(
                             modifier = Modifier.padding(top = 8.dp),
                             icon = {
-                                BadgedBox(badge = {
-                                    if (screen is BottomNavItem.Bargains && hasNewOrders) {
-                                        Badge()
-                                    }
-                                }) {
-                                    Icon(
-                                        modifier = Modifier.scale(animatedScale),
-                                        imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                                        contentDescription = screen.title
-                                    )
-                                }
+                                Icon(
+                                    modifier = Modifier.scale(animatedScale),
+                                    imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
+                                    contentDescription = screen.title
+                                )
                             },
                             label = {
                                 Text(
@@ -253,17 +248,13 @@ private fun MainAppContent(auth: FirebaseAuth) {
         ) {
             AppNavHost(
                 navController = navController,
-                auth = auth,
-                mainViewModel = mainViewModel
+                auth = auth
             )
         }
     }
 }
 
 class MainViewModel : ViewModel() {
-    private val _hasNewOrders = MutableStateFlow(false)
-    val hasNewOrders = _hasNewOrders.asStateFlow()
-
     init {
         wakeUpBackend()
     }
@@ -287,7 +278,7 @@ class MainViewModel : ViewModel() {
                     val payload = "{\"query\":\"{__typename}\"}"
 
                     connection.outputStream.use { os ->
-                        val input = payload.toByteArray(java.nio.charset.StandardCharsets.UTF_8)
+                        val input = payload.toByteArray(StandardCharsets.UTF_8)
                         os.write(input, 0, input.size)
                     }
 
@@ -300,14 +291,6 @@ class MainViewModel : ViewModel() {
             }
         }
     }
-
-    fun notifyNewOrder() {
-        _hasNewOrders.value = true
-    }
-
-    fun clearNewOrderNotification() {
-        _hasNewOrders.value = false
-    }
 }
 
 
@@ -315,8 +298,7 @@ class MainViewModel : ViewModel() {
 @Composable
 private fun AppNavHost(
     navController: NavHostController,
-    auth: FirebaseAuth,
-    mainViewModel: MainViewModel
+    auth: FirebaseAuth
 ) {
     val networkStatus = LocalNetworkStatus.current
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
@@ -326,26 +308,6 @@ private fun AppNavHost(
         NoInternetScreen()
     } else {
         NavHost(navController, startDestination = NavigationDestinations.FUNSPOT_LIST) {
-            composable(route = NavigationDestinations.STORE) {
-                ProductListScreen(
-                    onProductClick = { product ->
-                        navController.navigate("${NavigationDestinations.PRODUCT_DETAILS}/${product.id}")
-                    }
-                )
-            }
-
-            composable(
-                route = "${NavigationDestinations.PRODUCT_DETAILS}/{${NavigationArguments.PRODUCT_ID}}",
-                arguments = listOf(navArgument(NavigationArguments.PRODUCT_ID) {
-                    type = NavType.StringType
-                })
-            ) { backStackEntry ->
-                ProductDetailsScreen(
-                    productId = backStackEntry.arguments?.getString(NavigationArguments.PRODUCT_ID)!!,
-                    onNavigateUp = { navController.navigateUp() }
-                )
-            }
-
             composable(route = NavigationDestinations.FUNSPOT_LIST) {
                 FunspotListScreen(
                     onStartCall = { funspot ->
@@ -370,53 +332,35 @@ private fun AppNavHost(
                 )
             }
 
-            composable(route = NavigationDestinations.LISTING_LIST) {
-                ListingListScreen(
-                    onListingClick = { listing ->
-                        navController.navigate("${NavigationDestinations.LISTING_DETAILS}/${listing.id}")
+            composable(route = NavigationDestinations.TEMPLATE_LIST) {
+                TemplateListScreen(
+                    onTemplateClick = { template ->
+                        navController.navigate("${NavigationDestinations.TEMPLATE_DETAILS}/${template.id}")
                     }
                 )
             }
 
             composable(
-                route = "${NavigationDestinations.LISTING_DETAILS}/{${NavigationArguments.LISTING_ID}}",
-                arguments = listOf(navArgument(NavigationArguments.LISTING_ID) {
+                route = "${NavigationDestinations.TEMPLATE_DETAILS}/{${NavigationArguments.TEMPLATE_ID}}",
+                arguments = listOf(navArgument(NavigationArguments.TEMPLATE_ID) {
                     type = NavType.StringType
                 })
-            ) { backStackEntry ->
-                ListingDetailsScreen(
-                    listingId = backStackEntry.arguments?.getString(NavigationArguments.LISTING_ID)!!,
-                    onNavigateUp = { navController.navigateUp() }
-                )
+            ) {
+                // TemplateDetailsScreen to be implemented
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Template Details Coming Soon")
+                }
             }
 
-            composable(route = NavigationDestinations.BARGAIN_LIST) {
-                BargainListScreen(
-                    onBargainClick = { bargain ->
-                        navController.navigate("${NavigationDestinations.BARGAIN_DETAILS}/${bargain.id}")
-                    }
-                )
-            }
-
-            composable(
-                route = "${NavigationDestinations.BARGAIN_DETAILS}/{${NavigationArguments.BARGAIN_ID}}",
-                arguments = listOf(navArgument(NavigationArguments.BARGAIN_ID) {
-                    type = NavType.StringType
-                })
-            ) { backStackEntry ->
-                BargainDetailsScreen(
-                    bargainId = backStackEntry.arguments?.getString(NavigationArguments.BARGAIN_ID)!!,
-                    onNavigateUp = { navController.navigateUp() }
-                )
+            composable(route = NavigationDestinations.STATS) {
+                StatsScreen()
             }
 
             composable(route = NavigationDestinations.FAVOURITE_LIST) {
                 FavouriteListScreen(
                     onItemClick = { item ->
                         val destination = when (item.type) {
-                            "Product" -> NavigationDestinations.PRODUCT_DETAILS
-                            "Listing" -> NavigationDestinations.LISTING_DETAILS
-                            "Bargain" -> NavigationDestinations.BARGAIN_DETAILS
+                            "Template" -> NavigationDestinations.TEMPLATE_DETAILS
                             else -> null
                         }
                         destination?.let {

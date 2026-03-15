@@ -1,141 +1,134 @@
+// src/resolvers/client.ts
 import Customer from "../models/customer.model.js";
-import Review from "../models/review.model.js";
-import Product from "../models/product.model.js";
-import Like from "../models/like.model.js";
-import { pubsub } from "../utils/redisDb.js";
-const CUSTOMER_ADDED = "CUSTOMER_ADDED";
-// --- 'likedBy' is no longer populated here ---
-const productPopulateOptions = [
-    { path: "bidders" },
-    {
-        path: "bid_history",
-        populate: { path: "_customer_id", model: "Customer" },
-    },
-];
+import Funds from "../models/funds.model.js";
 export const customerResolvers = {
     Query: {
-        customers: async (_, { pageSize = 20, after, filter, sort }) => {
-            let query = {};
-            if (filter) {
-                if (filter.search) {
-                    query.$or = [
-                        { _uid: { $regex: filter.search, $options: "i" } },
-                        { phone_number: { $regex: filter.search, $options: "i" } },
-                        { user_name: { $regex: filter.search, $options: "i" } },
-                        { bio: { $regex: filter.search, $options: "i" } },
-                        { profile_picture: { $regex: filter.search, $options: "i" } },
-                        { cover_photo: { $regex: filter.search, $options: "i" } },
-                        { permanent_address: { $regex: filter.search, $options: "i" } },
-                        { website: { $regex: filter.search, $options: "i" } },
-                        { facebook: { $regex: filter.search, $options: "i" } },
-                        { twitter: { $regex: filter.search, $options: "i" } },
-                        { instagram: { $regex: filter.search, $options: "i" } },
-                        { linkedin: { $regex: filter.search, $options: "i" } },
-                        { youtube: { $regex: filter.search, $options: "i" } },
-                        { tiktok: { $regex: filter.search, $options: "i" } },
-                        { pinterest: { $regex: filter.search, $options: "i" } },
-                    ];
-                }
-                if (filter._uid)
-                    query._uid = filter._uid;
-                if (filter.phone_number)
-                    query.phone_number = filter.phone_number;
-                if (filter.kyc_verified)
-                    query.kyc_verified = filter.kyc_verified;
-                if (filter._kyc_id)
-                    query._kyc_id = filter._kyc_id;
-                if (filter.user_name)
-                    query.user_name = filter.user_name;
-                if (filter.bio)
-                    query.bio = filter.bio;
-                if (filter.profile_picture)
-                    query.profile_picture = filter.profile_picture;
-                if (filter.cover_photo)
-                    query.cover_photo = filter.cover_photo;
-                if (filter.permanent_address)
-                    query.permanent_address = filter.permanent_address;
-                if (filter.is_active)
-                    query.is_active = filter.is_active;
-                if (filter.is_blocked)
-                    query.is_blocked = filter.is_blocked;
-                if (filter.is_verified)
-                    query.is_verified = filter.is_verified;
-                if (filter.is_moderated)
-                    query.is_moderated = filter.is_moderated;
-                if (filter.website)
-                    query.website = filter.website;
-                if (filter.facebook)
-                    query.facebook = filter.facebook;
-                if (filter.twitter)
-                    query.twitter = filter.twitter;
-                if (filter.instagram)
-                    query.instagram = filter.instagram;
-                if (filter.linkedin)
-                    query.linkedin = filter.linkedin;
-                if (filter.youtube)
-                    query.youtube = filter.youtube;
-                if (filter.tiktok)
-                    query.tiktok = filter.tiktok;
-                if (filter.pinterest)
-                    query.pinterest = filter.pinterest;
-                if (filter.likes)
-                    query.likes = filter.likes;
-                if (filter.average_rating)
-                    query.average_rating = filter.average_rating;
-                if (filter.review_count)
-                    query.review_count = filter.review_count;
+        getCustomer: async (_, { customerId }) => {
+            try {
+                const customer = await Customer.findById(customerId);
+                return customer;
             }
-            if (after) {
-                query._id = { $lt: after };
+            catch (error) {
+                throw error;
             }
-            const limit = pageSize + 1;
-            const sortOptions = sort
-                ? { [sort.field]: sort.order === "ASC" ? 1 : -1 }
-                : { _id: -1 };
-            const items = await Customer.find(query).sort(sortOptions).limit(limit);
-            const hasMore = items.length === limit;
-            const results = hasMore ? items.slice(0, -1) : items;
-            const cursor = results.length > 0 ? results[results.length - 1]._id.toString() : null;
-            return { customers: results, cursor, hasMore };
         },
-        customer: async (_, { _id }) => await Customer.findById(_id),
-        customerByPhoneNumber: async (_, { phone_number } // Fixed argument name
-        ) => Customer.findOne({ phone_number }),
+        getCustomerByUid: async (_, { uid }) => {
+            try {
+                const customer = await Customer.findOne({ _uid: uid });
+                return customer;
+            }
+            catch (error) {
+                throw error;
+            }
+        },
     },
     Mutation: {
-        createCustomer: async (_, { input }) => {
-            const newItem = await Customer.create(input);
-            pubsub.publish(CUSTOMER_ADDED, { customerAdded: newItem });
-            return newItem;
+        /**
+         * Creates or updates a customer and their associated fund.
+         * The fund's _paypal_id is only set on creation, not on subsequent updates.
+         * Handles duplicate key errors with a retry mechanism.
+         *
+         * @param {any} this - The 'this' context (can be important in some GraphQL server setups).
+         * @param {any} _ - Placeholder for the parent object, not used here.
+         * @param {object} args - The arguments passed to the mutation.
+         * @param {object} args.input - The input data for creating/updating the customer.
+         * @param {number} retryCount - Internal counter for retry attempts.
+         * @returns {Promise<object>} An object containing the customer and fund documents.
+         * @throws {Error} If an unrecoverable error occurs.
+         */
+        async createCustomer(_, { input }, retryCount = 0) {
+            let customerDoc; // To store the resolved customer document
+            let fundDoc; // To store the resolved fund document
+            try {
+                // Step 1: Upsert Customer
+                console.log(`Attempting to find or create customer with _uid: ${input._uid}`);
+                customerDoc = await Customer.findOneAndUpdate({ _uid: input._uid }, input, // Using the entire 'input' for customer update.
+                // Ensure 'input' contains only valid Customer schema fields
+                // or use specific $set operations for finer control.
+                {
+                    new: true, // Return the modified document
+                    upsert: true, // Create if it doesn't exist
+                    setDefaultsOnInsert: true, // Apply schema defaults on insert
+                    runValidators: true, // Run schema validators
+                });
+                if (!customerDoc) {
+                    // This path should ideally not be hit if upsert:true and no validation/DB errors occur.
+                    console.error(`createCustomer: Failed to create or find customer for _uid: ${input._uid}. This is unexpected with upsert:true.`);
+                    // Consider throwing a more specific error if this state is reached.
+                    // For now, execution will continue, but subsequent operations might fail if customerDoc is null.
+                }
+                else {
+                    console.log(`Customer operation successful for _uid: ${input._uid}. Customer ID: ${customerDoc._id}`);
+                }
+                // Step 2: Upsert Fund
+                // The _paypal_id will only be set if a new Fund document is inserted.
+                // If the Fund document already exists, its _paypal_id will not be changed by this operation.
+                console.log(`Attempting to find or create fund for account_id: ${customerDoc._id}`);
+                fundDoc = await Funds.findOneAndUpdate({ _account_id: customerDoc._id }, // The query to find the fund using the resolved customer's ID
+                {
+                    $set: {
+                        // Fields to set on update OR insert (if not in $setOnInsert)
+                        is_active: true, // Ensure the fund is active
+                    },
+                    $setOnInsert: {
+                        // These values are only set when a new document is created (inserted)
+                        _paypal_id: input._paypal_id || "", // Set PayPal ID only on creation
+                        tokens: 0, // Initialize tokens to 0 (numeric) if it's a new fund.
+                        // Ensure your schema expects a Number for 'tokens'.
+                    },
+                }, {
+                    new: true, // Return the modified or new document
+                    upsert: true, // Create if it doesn't exist
+                    runValidators: true, // Run schema validators for the Funds model
+                });
+                if (!fundDoc) {
+                    // Similar to customerDoc, this is unexpected with upsert:true.
+                    console.error(`createCustomer: Failed to create or find fund for account_id: ${customerDoc._id}. This is unexpected with upsert:true.`);
+                    // Handle as per your application's error strategy
+                }
+                else {
+                    console.log(`Fund operation successful for account_id: ${customerDoc._id}. Fund ID: ${fundDoc._id}. PayPal ID: ${fundDoc._paypal_id}`);
+                }
+                // Both operations were successful (or threw errors that were caught)
+                return { customer: customerDoc, fund: fundDoc };
+            }
+            catch (error) {
+                // Handle MongoDB duplicate key error (code 11000) with a retry mechanism
+                if (error.code === 11000 && retryCount < 3) {
+                    console.error(`createCustomer: Duplicate key error (attempt ${retryCount + 1}/3). Retrying...`, `Error Message: ${error.message}`, // Log the full error message
+                    `Conflicting Key: ${JSON.stringify(error.keyValue)}` // Log the specific key/value that caused the duplicate error
+                    );
+                    // Wait for a short, slightly randomized delay before retrying
+                    await new Promise((resolve) => setTimeout(resolve, 200 + Math.random() * 100));
+                    // Recursively call createCustomer, ensuring 'this' context is preserved.
+                    return await this.createCustomer(_, { input }, retryCount + 1);
+                }
+                // If the error is not a manageable duplicate key error, or if retries are exhausted
+                console.error("createCustomer: Unrecoverable error during customer or fund creation/update:", error // Log the full error object for more details
+                );
+                // Re-throw the error to be handled by GraphQL error formatting/logging
+                throw error;
+            }
         },
-        updateCustomer: async (_, { _id, input }) => {
-            return await Customer.findByIdAndUpdate(_id, input, { new: true });
-        },
-        deleteCustomer: async (_, { _id }) => {
-            return await Customer.findByIdAndDelete(_id);
+        updateCustomer: async (_, { customerId, input }) => {
+            try {
+                // Find the customer by ID
+                const existingCustomer = await Customer.findById(customerId);
+                // If the customer doesn't exist, throw an error
+                if (!existingCustomer) {
+                    throw new Error(`Customer with ID ${customerId} not found`);
+                }
+                // Update the customer with the provided data
+                const updatedCustomer = await Customer.findByIdAndUpdate(customerId, input, // Use 'input' here to update with the provided data
+                { new: true } // Return the updated document
+                );
+                // Return the updated customer
+                return updatedCustomer;
+            }
+            catch (error) {
+                throw error;
+            }
         },
     },
-    Customer: {
-        // Resolve the 'reviews' field on the 'Customer' type
-        reviews: (parent) => {
-            // Find all reviews *for* this customer (where parent._id is the _customer_id)
-            return Review.find({ _customer_id: parent._id })
-                .populate(["_customer_id", "reviewed_by"])
-                .sort({ createdAt: -1 });
-        },
-        // --- /!\ NEW Resolver for liking_history /!\ ---
-        liking_history: async (parent) => {
-            // Find all 'Like' documents by this customer
-            const likes = await Like.find({ _customer_id: parent._id }).select("_product_id");
-            // Extract the product IDs
-            const productIds = likes.map((like) => like._product_id);
-            // Fetch the actual Product documents
-            return Product.find({ _id: { $in: productIds } }).populate(productPopulateOptions);
-        },
-    },
-    Subscription: {
-        customerAdded: {
-            subscribe: () => pubsub.asyncIterator([CUSTOMER_ADDED]),
-        },
-    },
+    Subscription: {},
 };

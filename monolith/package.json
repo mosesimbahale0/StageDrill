@@ -18,7 +18,9 @@
   "dependencies": {
     "@apollo/server": "^4.10.4",
     "@azure/core-auth": "^1.9.0",
+    "@google/genai": "^1.0.0",
     "@graphql-tools/schema": "^10.0.4",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "dataloader": "^2.2.3",

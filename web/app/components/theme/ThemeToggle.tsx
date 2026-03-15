@@ -1,37 +1,54 @@
 // app/components/ThemeToggle.tsx
-import React, {useContext} from "react";
-import {ThemeContext} from "./Theme";
+import React, { useContext } from "react";
+import { ThemeContext } from "./Theme";
 
 function ThemeToggle() {
-    const {theme, toggleTheme} = useContext(ThemeContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
-    return (
-        <div
-            onClick={toggleTheme}
-            className={`hidden sm:flex flex-row items-center gap-2 justify-center 
-h-14 w-14  rounded-full border-2 cursor-pointer transition-all duration-300
-${theme === "dark"
-                ? "bg-accent border-accent text-buttontext shadow-lg hover:bg-accent hover:text-buttontext2"
-                : "bg-accent border-accent text-buttontext shadow-lg hover:bg-accent hover:text-buttontext2"
-            }`}
+  return (
+    <div
+      onClick={toggleTheme}
+      className={`hidden sm:flex flex-row items-center gap-2 justify-center 
+        h-12 w-12 rounded-full border-2 cursor-pointer transition-all duration-300 hover:text-buttontext
+        ${theme === "dark"
+          ? "bg-primary border-accent text-text shadow-lg hover:bg-accent hover:text-text2"
+          : "bg-primary border-accent text-text2 hover:bg-accent hover:text-text"
+        }`}
+    >
+      {theme === "dark" ? (
+        // Dark Theme SVG Icon
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          className=" text-text"
         >
-            {theme === "dark" ? (
-                // Dark Theme SVG Icon
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                     fill="currentColor">
-                    <path
-                        d="M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Zm326-268Z"/>
-                </svg>
-            ) : (
-                // Light Theme SVG Icon
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                     fill="currentColor">
-                    <path
-                        d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z"/>
-                </svg>
-            )}
-        </div>
-    );
+          <g fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3.5" />
+            <path
+              strokeLinecap="round"
+              d="M12 5V3m0 18v-2m4.95-11.95l1.414-1.414M5.636 18.364L7.05 16.95M19 12h2M3 12h2m11.95 4.95l1.414 1.414M5.636 5.636L7.05 7.05"
+            />
+          </g>
+        </svg>
+      ) : (
+        // Light Theme SVG Icon
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+
+        >
+          <path
+            fill="currentColor"
+            d="M12.058 20q-3.334 0-5.667-2.333T4.058 12q0-3.039 1.98-5.27t4.904-2.634q.081 0 .159.006t.153.017q-.506.706-.801 1.57T10.158 7.5q0 2.667 1.866 4.533t4.534 1.867q.951 0 1.813-.295t1.548-.801q.012.075.017.153t.006.159q-.384 2.923-2.615 4.903T12.057 20m0-1q2.2 0 3.95-1.213t2.55-3.162q-.5.125-1 .2t-1 .075q-3.074 0-5.237-2.162T9.158 7.5q0-.5.075-1t.2-1q-1.95.8-3.163 2.55T5.058 12q0 2.9 2.05 4.95t4.95 2.05m-.25-6.75"
+          />
+        </svg>
+      )}
+    </div>
+  );
 }
 
 export default ThemeToggle;

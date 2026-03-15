@@ -1,3 +1,6 @@
+
+import Logo from "./Logo";
+
 export default function Loader() {
   return (
     <>
@@ -5,7 +8,10 @@ export default function Loader() {
 
 
         <div className=" flex flex-row  gap-2 justify-center items-center outline-none">
-          <img alt="logo" src="/assets/logo2.png" className="h-20 w-20" />
+
+          <Logo />
+
+
         </div>
 
         <div className="flex flex-row gap-1 justify-center items-center">

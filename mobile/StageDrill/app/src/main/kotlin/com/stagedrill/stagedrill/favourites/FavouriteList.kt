@@ -22,14 +22,14 @@ import com.stagedrill.stagedrill.ui.theme.BrandColor
 
 /**
  * Data model representing a favourited item.
- * It can be a product, listing, or bargain.
+ * It can be a listing or bargain.
  */
 data class FavouriteItem(
     val id: String,
     val title: String,
     val category: String,
     val price: String,
-    val type: String, // "Product", "Listing", or "Bargain"
+    val type: String, // "Listing" or "Bargain"
     val accentColor: Color
 )
 
@@ -38,14 +38,6 @@ data class FavouriteItem(
  */
 class FavouriteProvider {
     val samples = listOf(
-        FavouriteItem(
-            id = "1",
-            title = "Organic Green Tea",
-            category = "Beverages",
-            price = "$12.99",
-            type = "Product",
-            accentColor = BrandColor
-        ),
         FavouriteItem(
             id = "L1",
             title = "Vintage Wooden Chair",
@@ -80,7 +72,6 @@ fun FavouriteListScreen(
 ) {
     val favourites = FavouriteProvider().samples
 
-    // Removed internal Scaffold as it is now provided by MainActivity
     Box(modifier = Modifier.fillMaxSize()) {
         if (favourites.isEmpty()) {
             Box(

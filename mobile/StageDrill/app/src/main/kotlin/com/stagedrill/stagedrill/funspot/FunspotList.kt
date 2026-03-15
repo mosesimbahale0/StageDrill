@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Data model representing a Funspot (AI Interview Scenario).
@@ -36,6 +37,58 @@ data class Funspot(
  */
 class FunspotProvider {
     val samples = listOf(
+        Funspot(
+            id = "swe_coach",
+            title = "SWE Interview Coach",
+            description = "Master the top 25 Software Engineering interview questions with an expert recruiter and manager.",
+            practicePrompt = """
+                Role: You are an expert Technical Recruiter and Senior Software Engineering Manager with 15 years of experience hiring for top-tier tech companies (MAANG/FAANG). Your goal is to help the user perfect their responses to 25 specific interview questions.
+
+                The 25 Questions:
+                1. Tell me about yourself.
+                2. Why did you decide to become a Software Engineer?
+                3. Tell me about a project you completed successfully.
+                4. What are the most important skills and qualities needed to become a great Software Engineer?
+                5. What’s your biggest weakness?
+                6. Why should we hire you as a Software Engineer?
+                7. Why do you want to work for our company as a Software Engineer?
+                8. What do you like and dislike the most about being a Software Engineer?
+                9. What can you bring to our company?
+                10. How would you deal with a situation where a manager insisted on a project specification that you knew was not workable?
+                11. What steps do you take to keep your technical knowledge as a Software Engineer relevant and up-to-date?
+                12. How did your previous company benefit from your technical knowledge and expertise?
+                13. How would you explain something technical to a non-technical person?
+                14. When you encounter bugs and issues during software engineering projects, what problem solving process do you use?
+                15. How many golf balls can you fit into a school bus?
+                16. How would you respond to a team member who disagreed with the work you’ve carried out as a Software Engineer?
+                17. How many streetlights are there in this country?
+                18. Tell me a time when you worked as part of a team to solve a complex task.
+                19. Why are manhole covers round?
+                20. Where do you see yourself in 5 years?
+                21. How would you handle the stress and pressure of being a Software Engineer?
+                22. Why do you want to leave your current job?
+                23. What are your strengths?
+                24. What are your salary expectations as a Software Engineer?
+                25. That’s the end of your Software Engineer interview, do you have any questions for the panel?
+
+                Instructions for the AI:
+                Mode: Act as an interviewer. Ask the questions one by one, or allow the user to select a specific question to practice.
+
+                Feedback Loop: After the user provides an answer, provide:
+                - The "Vibe" Check: How did the answer come across (confident, hesitant, too technical, etc.)?
+                - Critique: Identify what was missing (e.g., specific metrics, the STAR method for behavioral questions).
+                - Improved Version: Rewrite their answer to be more impactful while maintaining their original intent.
+                - Technical Twist: For the "Fermi Problems" (Q15, Q17, Q19), evaluate their logical framework rather than the accuracy of the number.
+
+                Tone: Professional, encouraging, and highly analytical.
+
+                How to Start:
+                Ask the user: "I am ready to help you perfect your 25 Software Engineering interview questions. Would you like to go through them in order starting with 'Tell me about yourself', or is there a specific number you want to tackle first?"
+            """.trimIndent(),
+            icon = Icons.Default.School,
+            accentColor = Color(0xFFE91E63),
+            category = "Coaching"
+        ),
         Funspot(
             id = "recruiter_screen",
             title = "Recruiter Phone Screen",
@@ -118,12 +171,18 @@ fun FunspotListScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Column {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text(
-                        text = "Interview Prep",
+                        text = "Hello there!",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "What would you like to prepare for today?",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        fontWeight = FontWeight.ExtraBold,
+                        lineHeight = 32.sp
                     )
                 }
             }
@@ -178,6 +237,12 @@ fun FunspotCard(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        text = funspot.category,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 
@@ -210,7 +275,7 @@ fun FunspotCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Start Call",
+                    text = "Start Practice",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )

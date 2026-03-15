@@ -99,7 +99,7 @@ export default function Index() {
                     className="text-4xl sm:text-4xl lg:text-5xl font-extrabold text-text leading-tight"
                     style={sulphurPoint}
                   >
-                    From Anxious <span className="text-accent">Speaker.</span>
+                    From  <span className="text-accent">Anxious Speaker.</span>
                     <br className="hidden sm:block" />
                     to Influential <span className="text-accent">Leader.</span>
                     <br className="hidden sm:block" />— Through{" "}

@@ -8,7 +8,7 @@ export default function WhitePapers() {
           href="/whitepapers/glossophobia_white_paper.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="  hover:text-accent text-sm mt-2  flex flex-row gap-1 justify-center items-center hover:underline "
+          className="  hover:text-accent text-xs mt-2  flex flex-row gap-1 justify-center items-center hover:underline "
         >
           Glossophobia Treatement White Paper
           <svg
@@ -32,7 +32,7 @@ export default function WhitePapers() {
           href="/whitepapers/interviews_white_paper.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="  hover:text-accent text-sm mt-2  flex flex-row gap-1 justify-center items-center hover:underline"
+          className="  hover:text-accent text-xs mt-2  flex flex-row gap-1 justify-center items-center hover:underline"
         >
           Interviews Preparation White Paper
           <svg

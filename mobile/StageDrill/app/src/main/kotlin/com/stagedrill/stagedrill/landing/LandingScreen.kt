@@ -40,18 +40,18 @@ private data class OnboardingStep(
 private val onboardingSteps = listOf(
     OnboardingStep(
         illustrationResId = R.drawable.undraw_deals,
-        title = "Discover Great Deals",
-        description = "Find unique, per-loved surplus items from your community at unbeatable prices. Your next bargain is just a tap away!"
+        title = "Master Your Interviews",
+        description = "Practice with AI-driven scenarios tailored for software engineers. From behavioral to system design."
     ),
     OnboardingStep(
         illustrationResId = R.drawable.undraw_list,
-        title = "List Your Surplus Items",
-        description = "Easily snap a photo and list your unused assets. Give your items a new life and declutter your space in an eco-friendly way."
+        title = "Expert Coaching",
+        description = "Get instant feedback on your answers from a virtual Senior Engineering Manager with 15 years of experience."
     ),
     OnboardingStep(
         illustrationResId = R.drawable.undraw_transact,
-        title = "Connect & Transact",
-        description = "Chat directly with sellers, negotiate prices, and arrange for a secure pickup or delivery. All within the app."
+        title = "Track Your Progress",
+        description = "Analyze your performance, refine your logic for Fermi problems, and perfect your 'Tell me about yourself'."
     )
 )
 
@@ -60,26 +60,20 @@ fun LandingScreen(onSignInClick: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { onboardingSteps.size })
     val scope = rememberCoroutineScope()
 
-
-
-
-
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { permissions ->
+        onResult = { _ ->
             onSignInClick()
         }
     )
 
     Scaffold { paddingValues ->
-        // --- UPDATED: Root Column layout ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues), // Use scaffold padding for system bars
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // --- UPDATED: Top section now has its own padding for better spacing ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -88,19 +82,11 @@ fun LandingScreen(onSignInClick: () -> Unit) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.app_logo),
-                    contentDescription = "WaterRefil App Logo",
+                    contentDescription = "StageDrill App Logo",
                     modifier = Modifier.size(80.dp)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-//                Text(
-//                    text = "WateRefil",
-//                    style = MaterialTheme.typography.headlineSmall,
-//                    fontWeight = FontWeight.SemiBold
-//                )
             }
 
-            // --- UPDATED: Pager now has weight and vertical padding ---
-            // This makes it the main flexible component, creating white space.
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -110,7 +96,6 @@ fun LandingScreen(onSignInClick: () -> Unit) {
                 OnboardingPage(step = onboardingSteps[page], pagerState = pagerState, page = page)
             }
 
-            // --- UPDATED: Bottom section has its own padding for balance ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,18 +114,19 @@ fun LandingScreen(onSignInClick: () -> Unit) {
                             }
                         } else {
                             val permissionsToRequest = mutableListOf<String>()
-                            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
-
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
                             }
-
-                            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+                            if (permissionsToRequest.isNotEmpty()) {
+                                permissionLauncher.launch(permissionsToRequest.toTypedArray())
+                            } else {
+                                onSignInClick()
+                            }
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp) // Increased horizontal padding on button
+                        .padding(horizontal = 32.dp)
                 ) {
                     AnimatedContent(targetState = pagerState.currentPage, label = "Button Text") { page ->
                         Text(
@@ -153,7 +139,6 @@ fun LandingScreen(onSignInClick: () -> Unit) {
     }
 }
 
-// ... (The rest of your file remains unchanged)
 @Composable
 private fun OnboardingPage(step: OnboardingStep, pagerState: PagerState, page: Int) {
     val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction

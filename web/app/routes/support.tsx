@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { useState } from "react";
-import { LifeBuoy, Mail, Phone, ChevronDown } from "lucide-react";
+import { LifeBuoy, Mail, ChevronDown } from "lucide-react";
 
 // Import shared UI components
 import Navbar from "~/components/common/Navbar";
@@ -8,10 +8,10 @@ import Footer from "~/components/common/Footer";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Bagein • Support " },
+    { title: "StageDrill • Support" },
     {
       name: "description",
-      content: "An Eco Friendly Assets didposal Platform  ",
+      content: "Get help and support for StageDrill.",
     },
   ];
 };
@@ -29,10 +29,10 @@ const FaqItem: React.FC<FaqItemProps> = ({ question, answer }) => {
     <div className="border-b border-tertiary pb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center text-left py-2 hover:bg-tertiary/20 px-2 rounded-lg"
+        className="w-full flex justify-between items-center text-left py-4 hover:bg-tertiary/20 px-4 rounded-none transition-colors duration-200"
         aria-expanded={isOpen}
       >
-        <span className="text-lg font-semibold text-text1">{question}</span>
+        <span className="text-lg font-bold text-text">{question}</span>
         <ChevronDown
           className={`h-5 w-5 text-accent transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -40,8 +40,8 @@ const FaqItem: React.FC<FaqItemProps> = ({ question, answer }) => {
         />
       </button>
       {isOpen && (
-        <div className="pt-3 px-2">
-          <p className="text-text2">{answer}</p>
+        <div className="pt-3 px-4">
+          <p className="text-text2 leading-relaxed">{answer}</p>
         </div>
       )}
     </div>
@@ -51,98 +51,83 @@ const FaqItem: React.FC<FaqItemProps> = ({ question, answer }) => {
 // --- Main Support Page Component ---
 export default function SupportPage() {
   return (
-    <section className="w-full bg-primary">
-      <main className="bg-primary text-text min-h-screen py-24 container mx-auto p-4">
-        <Navbar />
-        <div className="max-w-4xl mx-auto">
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow bg-background relative overflow-hidden flex flex-col pt-24 pb-16 font-sans">
+        
+        {/* Decorative Background Elements */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-info/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-screen" />
+        <div className="absolute top-40 right-10 w-80 h-80 bg-accent/20 rounded-full blur-[100px] -z-10 pointer-events-none mix-blend-screen" />
+        
+        <div className="max-w-4xl mx-auto px-4 w-full z-10">
           {/* --- Header & Contact Cards --- */}
-          <div className="bg-secondary rounded-2xl shadow-lg p-8 md:p-12 mb-8">
+          <div className="bg-primary border border-tertiary rounded-none shadow-sm p-8 md:p-12 mb-8 mt-8">
             <div className="flex flex-col md:flex-row items-center md:space-x-8">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 mb-6 md:mb-0">
                 <LifeBuoy className="h-24 w-24 text-accent" />
               </div>
-              <div className="text-center md:text-left mt-6 md:mt-0">
-                <h1 className="text-4xl font-bold text-text1">
+              <div className="text-center md:text-left">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-text tracking-tight">
                   How can we help?
                 </h1>
-                <p className="text-text2 mt-4 text-lg">
+                <p className="text-text2 mt-4 text-lg leading-relaxed">
                   We're here to assist you with any questions or issues you
-                  might have. Reach out to us, and we'll get back to you as soon
+                  might have regarding your interview preparation. Reach out to us, and we'll get back to you as soon
                   as possible.
                 </p>
               </div>
             </div>
 
             {/* --- Contact Methods Grid --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-              {/* Email Card */}
-              <div className="bg-tertiary p-6 rounded-2xl flex items-start space-x-4">
+            <div className="mt-10 max-w-md mx-auto md:mx-0 md:ml-auto">
+              {/* Email Card (Only mode of support) */}
+              <div className="bg-secondary border border-tertiary p-6 rounded-none flex items-start space-x-4">
                 <Mail className="h-8 w-8 text-accent flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-xl font-semibold text-text1">
+                  <h3 className="text-xl font-bold text-text">
                     Email Support
                   </h3>
-                  <p className="text-text2 mt-1 mb-2">
-                    Best for non-urgent requests.
+                  <p className="text-text2 mt-1 mb-3 text-sm">
+                    Our primary support channel. We reply within 24 hours.
                   </p>
                   <a
-                    href="mailto:support@bagein.com"
-                    className="text-accent hover:underline font-medium break-all"
+                    href="mailto:support@stagedrill.com"
+                    className="inline-flex items-center gap-2 bg-accent hover:bg-complementary text-buttontext px-4 py-2 text-sm font-bold transition-colors"
                   >
-                    support@bagein.com
+                    support@stagedrill.com
                   </a>
-                </div>
-              </div>
-
-              {/* Phone Card */}
-              <div className="bg-tertiary p-6 rounded-2xl flex items-start space-x-4">
-                <Phone className="h-8 w-8 text-accent flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="text-xl font-semibold text-text1">
-                    Phone Support
-                  </h3>
-                  <p className="text-text2 mt-1 mb-2">
-                    Mon-Fri, 9:00 AM - 5:00 PM
-                  </p>
-                  <span className="text-accent font-medium">
-                    +254 700 000 000
-                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* --- FAQ Section --- */}
-          <div className="bg-secondary rounded-2xl shadow-lg p-8 md:p-12">
-            <h2 className="text-3xl font-bold text-text1 mb-8 text-center">
-              Frequently Asked Questions
+          <div className="bg-primary border border-tertiary rounded-none shadow-sm p-8 md:p-12 mb-12">
+            <h2 className="text-3xl font-extrabold text-text mb-8 text-center" style={{ fontFamily: "Sulphur Point, sans-serif" }}>
+              Quick Answers
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-2">
               <FaqItem
-                question="How do I create an account?"
-                answer="You can create an account by clicking the 'Login' or 'Sign Up' button in the top navigation bar. You can sign up using your phone number or Google account."
+                question="How do I start a new practice session?"
+                answer="Navigate to the Funspots page from your dashboard and select a scenario that matches your needs. Click 'Start Call' to begin."
               />
               <FaqItem
-                question="How do I list an item for auction?"
-                answer="Once logged in, go to your 'My Account' page and click the 'Add New Listing' button. Fill out the product details, set a starting bid, and define the auction duration."
+                question="How do credits work?"
+                answer="Every time you start a new AI interview practice session, credits are deducted from your balance. You can buy more credits on the Pricing page."
               />
               <FaqItem
-                question="What are the fees for selling on Bagein?"
-                answer="We charge a small commission fee only on successfully sold items. There are no fees for listing your products. Please refer to our 'Pricing' page for a detailed breakdown."
+                question="Can I review past interviews?"
+                answer="Yes, all your past interview transcripts and feedback are saved in your account dashboard under 'History'."
               />
               <FaqItem
-                question="How does bidding work?"
-                answer="You can place a bid on any active auction. If your bid is the highest when the auction timer ends, you win the item. You will be notified via SMS and email to complete the payment."
-              />
-              <FaqItem
-                question="Is my payment information secure?"
-                answer="Yes, all payments are processed through a secure, encrypted connection. We do not store your credit card or M-Pesa details on our servers."
+                question="Is my audio recorded or stored?"
+                answer="We process your audio in real-time to generate AI responses and transcripts, but we do not store the raw audio files after the session ends to protect your privacy."
               />
             </div>
           </div>
         </div>
       </main>
       <Footer />
-    </section>
+    </div>
   );
 }
